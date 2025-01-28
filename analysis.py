@@ -47,5 +47,20 @@ def calculate_success_rate():
         }
     except Exception as e:
         return {"error": f"Bir hata oluştu: {str(e)}"}
-
     
+# En çok saldırı yapan 10 ülke analiz
+def analyze_top_attacking_countries():
+    try:
+        query = "SELECT attackfrom FROM attacks"
+        df = execute_query(query)
+        
+        if df.empty or 'attackfrom' not in df.columns:
+            return {"error": "Veritabanında ülke bilgisi bulunamadı."}
+
+        country_counts = df['attackfrom'].value_counts().head(10)
+        top_countries = country_counts.reset_index(name='count')
+        top_countries.columns = ['country', 'count']
+
+        return top_countries.to_dict(orient="records")
+    except Exception as e:
+        return {"error": f"Bir hata oluştu: {str(e)}"}

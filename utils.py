@@ -1,3 +1,4 @@
+import pycountry
 import requests
 
 def get_country_from_ip(ip):
@@ -10,7 +11,11 @@ def get_country_from_ip(ip):
         # Yanıt başarılıysa veriyi işle
         if response.status_code == 200:
             data = response.json()
-            return data.get("country", "Unknown")  # Ülke bilgisini döndür
+            country_code = data.get("country", "Unknown")  # Ülke kodunu al
+
+            # Ülke kodunu tam ülke adına çevir
+            country = pycountry.countries.get(alpha_2=country_code)
+            return country.name if country else "Unknown"
         else:
             print(f"API hatası: {response.status_code}")
             return "Unknown"
