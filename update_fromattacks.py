@@ -4,13 +4,12 @@ from sqlalchemy import text
 from database import get_database_connection
 from utils import get_country_from_ip
 
-
-def update_attackfrom():
-    ip_cache = {}  # Önceden çekilen IP'ler için bir cache
+def update_attackfrom_session_connect():
+    ip_cache = {}  # Önceden çekilen IP'ler için bir cache (gereksiz API çağrılarını önlemek için)
 
     try:
         # Veritabanından 'attackfrom' sütunu boş olan ve unique IP adreslerini çek
-        query = "SELECT DISTINCT src_ip FROM attacks WHERE attackfrom IS NULL"
+        query = "SELECT DISTINCT src_ip FROM session_connect WHERE attackfrom IS NULL"
         engine = get_database_connection()
         df = pd.read_sql(query, engine)
 
@@ -25,7 +24,7 @@ def update_attackfrom():
         try:
             with engine.connect() as connection:
                 update_query = text("""
-                UPDATE attacks
+                UPDATE session_connect
                 SET attackfrom = :location
                 WHERE src_ip = :ip
                 """)
@@ -45,12 +44,12 @@ def update_attackfrom():
                     else:
                         # API'den konum bilgisini al
                         location = get_country_from_ip(ip)
-                        ip_cache[ip] = location
+                        ip_cache[ip] = location  # Cache'e ekle
 
                     # Eğer konum bilgisi alındıysa tüm ilgili kayıtları güncelle
                     if location != "Unknown":
                         update_query = text("""
-                        UPDATE attacks
+                        UPDATE session_connect
                         SET attackfrom = :location
                         WHERE src_ip = :ip
                         """)
@@ -64,11 +63,11 @@ def update_attackfrom():
                 transaction.rollback()  # Hata durumunda geri al
                 print(f"Bir hata oluştu: {e}")
 
-        print("attackfrom sütunu başarıyla güncellendi.")
+        print("session_connect tablosundaki attackfrom sütunu başarıyla güncellendi.")
 
     except Exception as e:
         print(f"Bir hata oluştu: {e}")
 
 
 if __name__ == "__main__":
-    update_attackfrom()
+    update_attackfrom_session_connect()

@@ -156,6 +156,30 @@ def analyze_brute_force_by_hour():
     except Exception as e:
         return {"error": f"Bir hata oluştu: {str(e)}"}
     
+# En çok brute force saldırısı yapan 5 ülke
+def analyze_top_brute_force_countries():
+    try:
+        query = """
+        SELECT sc.attackfrom
+        FROM brute_force bf
+        JOIN session_connect sc ON bf.session = sc.session
+        WHERE sc.attackfrom IS NOT NULL
+        """
+        df = execute_query(query)
+
+        if df.empty:
+            return {"error": "Brute force saldırılarına ait ülke verisi bulunamadı."}
+
+        # En çok saldırı yapan ülkeleri bul
+        top_countries = df["attackfrom"].value_counts().reset_index(name="count")
+        top_countries.columns = ["country", "count"]
+
+        return top_countries.head(5).to_dict(orient="records")
+
+    except Exception as e:
+        return {"error": f"Bir hata oluştu: {str(e)}"}
+    
+    
 # En çok kullanılan 5 username-password ikilisi (`dictionary_attack`)
 def analyze_top_dictionary_attack_combinations():
     try:
@@ -236,6 +260,258 @@ def analyze_dictionary_attack_by_hour():
         time_counts = df["hour"].value_counts().sort_index()
 
         return time_counts.to_dict()
+
+    except Exception as e:
+        return {"error": f"Bir hata oluştu: {str(e)}"}
+    
+#En çok dictionary attack saldırısı yapan 5 ülke
+def analyze_top_dictionary_attack_countries():
+    try:
+        query = """
+        SELECT sc.attackfrom
+        FROM dictionary_attack da
+        JOIN session_connect sc ON da.session = sc.session
+        WHERE sc.attackfrom IS NOT NULL
+        """
+        df = execute_query(query)
+
+        if df.empty:
+            return {"error": "Dictionary attack saldırılarına ait ülke verisi bulunamadı."}
+
+        # En çok saldırı yapan ülkeleri bul
+        top_countries = df["attackfrom"].value_counts().reset_index(name="count")
+        top_countries.columns = ["country", "count"]
+
+        return top_countries.head(5).to_dict(orient="records")
+
+    except Exception as e:
+        return {"error": f"Bir hata oluştu: {str(e)}"}
+
+def analyze_command_injection_by_hour(): #saatlere göre command_imjection yoğunluğu
+    try:
+        query = "SELECT timestamp FROM command_injection"
+        df = execute_query(query)
+
+        if df.empty:
+            return {"error": "Command injection saldırılarına ait zaman verisi bulunamadı."}
+
+        # Zamanı saat olarak gruplandır
+        df["timestamp"] = pd.to_datetime(df["timestamp"])
+        df["hour"] = df["timestamp"].dt.hour
+        time_counts = df["hour"].value_counts().sort_index()
+
+        return time_counts.to_dict()
+
+    except Exception as e:
+        return {"error": f"Bir hata oluştu: {str(e)}"}
+
+#En fazla tekrarlayan 3 input komutu(command-injection)
+def analyze_top_command_injections():
+    try:
+        query = "SELECT input FROM command_injection WHERE input IS NOT NULL"
+        df = execute_query(query)
+
+        if df.empty:
+            return {"error": "Command injection saldırılarına ait input verisi bulunamadı."}
+
+        # En çok kullanılan inputları bul
+        top_inputs = df["input"].value_counts().reset_index(name="count")
+        top_inputs.columns = ["input", "count"]
+
+        return top_inputs.head(3).to_dict(orient="records")
+
+    except Exception as e:
+        return {"error": f"Bir hata oluştu: {str(e)}"}
+    
+#En çok command injection saldırısı yapan 5 ülke
+def analyze_top_command_injection_countries():
+    try:
+        query = """
+        SELECT sc.attackfrom
+        FROM command_injection ci
+        JOIN session_connect sc ON ci.session = sc.session
+        WHERE sc.attackfrom IS NOT NULL
+        """
+        df = execute_query(query)
+
+        if df.empty:
+            return {"error": "Command injection saldırılarına ait ülke verisi bulunamadı."}
+
+        # En çok saldırı yapan ülkeleri bul
+        top_countries = df["attackfrom"].value_counts().reset_index(name="count")
+        top_countries.columns = ["country", "count"]
+
+        return top_countries.head(5).to_dict(orient="records")
+
+    except Exception as e:
+        return {"error": f"Bir hata oluştu: {str(e)}"}
+    
+#Saatlere göre file download saldırı yoğunluğu analizi
+def analyze_file_download_by_hour():
+    try:
+        query = "SELECT timestamp FROM file_download"
+        df = execute_query(query)
+
+        if df.empty:
+            return {"error": "File download saldırılarına ait zaman verisi bulunamadı."}
+
+        # Zamanı saat olarak gruplandır
+        df["timestamp"] = pd.to_datetime(df["timestamp"])
+        df["hour"] = df["timestamp"].dt.hour
+        time_counts = df["hour"].value_counts().sort_index()
+
+        return time_counts.to_dict()
+
+    except Exception as e:
+        return {"error": f"Bir hata oluştu: {str(e)}"}
+
+#En çok erişilmeye çalışılan 3 destfile(file_download)
+def analyze_top_downloaded_files():
+    try:
+        query = "SELECT destfile FROM file_download WHERE destfile IS NOT NULL"
+        df = execute_query(query)
+
+        if df.empty:
+            return {"error": "File download saldırılarına ait dosya verisi bulunamadı."}
+
+        # En çok indirilmeye çalışılan dosyaları bul
+        top_files = df["destfile"].value_counts().reset_index(name="count")
+        top_files.columns = ["destfile", "count"]
+
+        return top_files.head(3).to_dict(orient="records")
+
+    except Exception as e:
+        return {"error": f"Bir hata oluştu: {str(e)}"}
+    
+#En çok file download saldırısı yapan 5 ülke
+def analyze_top_file_download_countries():
+    try:
+        query = """
+        SELECT sc.attackfrom
+        FROM file_download fd
+        JOIN session_connect sc ON fd.session = sc.session
+        WHERE sc.attackfrom IS NOT NULL
+        """
+        df = execute_query(query)
+
+        if df.empty:
+            return {"error": "File download saldırılarına ait ülke verisi bulunamadı."}
+
+        # En çok saldırı yapan ülkeleri bul
+        top_countries = df["attackfrom"].value_counts().reset_index(name="count")
+        top_countries.columns = ["country", "count"]
+
+        return top_countries.head(5).to_dict(orient="records")
+
+    except Exception as e:
+        return {"error": f"Bir hata oluştu: {str(e)}"}
+    
+#Saatlere göre malware saldırı yoğunluğu analizi
+def analyze_malware_by_hour():
+    try:
+        query = "SELECT timestamp FROM malware"
+        df = execute_query(query)
+
+        if df.empty:
+            return {"error": "Malware saldırılarına ait zaman verisi bulunamadı."}
+
+        # Zamanı saat olarak gruplandır
+        df["timestamp"] = pd.to_datetime(df["timestamp"])
+        df["hour"] = df["timestamp"].dt.hour
+        time_counts = df["hour"].value_counts().sort_index()
+
+        return time_counts.to_dict()
+
+    except Exception as e:
+        return {"error": f"Bir hata oluştu: {str(e)}"}
+
+#En çok tekrar eden 3 filename(malware)
+def analyze_top_malware_files():
+    try:
+        query = "SELECT filename FROM malware WHERE filename IS NOT NULL"
+        df = execute_query(query)
+
+        if df.empty:
+            return {"error": "Malware saldırılarına ait dosya verisi bulunamadı."}
+
+        # En çok kullanılan filename'leri bul
+        top_filenames = df["filename"].value_counts().reset_index(name="count")
+        top_filenames.columns = ["filename", "count"]
+
+        return top_filenames.head(3).to_dict(orient="records")
+
+    except Exception as e:
+        return {"error": f"Bir hata oluştu: {str(e)}"}
+    
+#En çok malware saldırısı yapan 5 ülke
+def analyze_top_malware_countries():
+    try:
+        query = """
+        SELECT sc.attackfrom
+        FROM malware m
+        JOIN session_connect sc ON m.session = sc.session
+        WHERE sc.attackfrom IS NOT NULL
+        """
+        df = execute_query(query)
+
+        if df.empty:
+            return {"error": "Malware saldırılarına ait ülke verisi bulunamadı."}
+
+        # En çok saldırı yapan ülkeleri bul
+        top_countries = df["attackfrom"].value_counts().reset_index(name="count")
+        top_countries.columns = ["country", "count"]
+
+        return top_countries.head(5).to_dict(orient="records")
+
+    except Exception as e:
+        return {"error": f"Bir hata oluştu: {str(e)}"}
+    
+#En fazla kullanılan protocoller ve sayıları
+def analyze_top_protocols():
+    try:
+        query = "SELECT protocol FROM session_connect WHERE protocol IS NOT NULL"
+        df = execute_query(query)
+
+        if df.empty:
+            return {"error": "Session connect tablosunda protocol verisi bulunamadı."}
+
+        # En çok kullanılan 2 protokolü bul
+        top_protocols = df["protocol"].value_counts().reset_index(name="count")
+        top_protocols.columns = ["protocol", "count"]
+
+        return top_protocols.head(2).to_dict(orient="records")
+
+    except Exception as e:
+        return {"error": f"Bir hata oluştu: {str(e)}"}
+    
+#Saldırganların login başarısı
+def analyze_attacker_login_success():
+    try:
+        query = """
+        SELECT eventid FROM (
+            SELECT eventid FROM brute_force WHERE eventid IN ('cowrie.login.success', 'cowrie.login.failed')
+            UNION ALL
+            SELECT eventid FROM dictionary_attack WHERE eventid IN ('cowrie.login.success', 'cowrie.login.failed')
+        ) AS combined_events
+        """
+        df = execute_query(query)
+
+        if df.empty:
+            return {"error": "Event ID içeren giriş verisi bulunamadı."}
+
+        # Başarı ve başarısız giriş sayılarını hesapla
+        success_count = df["eventid"].value_counts().get("cowrie.login.success", 0)
+        failed_count = df["eventid"].value_counts().get("cowrie.login.failed", 0)
+        total_attempts = success_count + failed_count
+
+        # Başarı oranını hesapla ve % ekle
+        success_rate = f"%{round((success_count / total_attempts) * 100, 2)}" if total_attempts > 0 else "%0"
+
+        return {
+            "successful_logins": int(success_count),
+            "failed_logins": int(failed_count),
+            "success_rate": success_rate 
+        }
 
     except Exception as e:
         return {"error": f"Bir hata oluştu: {str(e)}"}
