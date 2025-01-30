@@ -484,33 +484,42 @@ def analyze_top_protocols():
     except Exception as e:
         return {"error": f"Bir hata oluştu: {str(e)}"}
     
-#Saldırganların login başarısı
-def analyze_attacker_login_success():
+# Saldırganların brute_force ve dictionary_attack için ayrı ayrı login başarı oranları
+def analyze_attacker_login_success_separately():
     try:
-        query = """
-        SELECT eventid FROM (
-            SELECT eventid FROM brute_force WHERE eventid IN ('cowrie.login.success', 'cowrie.login.failed')
-            UNION ALL
-            SELECT eventid FROM dictionary_attack WHERE eventid IN ('cowrie.login.success', 'cowrie.login.failed')
-        ) AS combined_events
+        # Brute Force için login başarısı analizi
+        brute_force_query = """
+        SELECT eventid FROM brute_force WHERE eventid IN ('cowrie.login.success', 'cowrie.login.failed')
         """
-        df = execute_query(query)
+        brute_force_df = execute_query(brute_force_query)
 
-        if df.empty:
-            return {"error": "Event ID içeren giriş verisi bulunamadı."}
+        brute_success = brute_force_df["eventid"].value_counts().get("cowrie.login.success", 0)
+        brute_failed = brute_force_df["eventid"].value_counts().get("cowrie.login.failed", 0)
+        brute_total = brute_success + brute_failed
+        brute_success_rate = f"%{round((brute_success / brute_total) * 100, 2)}" if brute_total > 0 else "%0"
 
-        # Başarı ve başarısız giriş sayılarını hesapla
-        success_count = df["eventid"].value_counts().get("cowrie.login.success", 0)
-        failed_count = df["eventid"].value_counts().get("cowrie.login.failed", 0)
-        total_attempts = success_count + failed_count
+        # Dictionary Attack için login başarısı analizi
+        dictionary_query = """
+        SELECT eventid FROM dictionary_attack WHERE eventid IN ('cowrie.login.success', 'cowrie.login.failed')
+        """
+        dictionary_df = execute_query(dictionary_query)
 
-        # Başarı oranını hesapla ve % ekle
-        success_rate = f"%{round((success_count / total_attempts) * 100, 2)}" if total_attempts > 0 else "%0"
+        dict_success = dictionary_df["eventid"].value_counts().get("cowrie.login.success", 0)
+        dict_failed = dictionary_df["eventid"].value_counts().get("cowrie.login.failed", 0)
+        dict_total = dict_success + dict_failed
+        dict_success_rate = f"%{round((dict_success / dict_total) * 100, 2)}" if dict_total > 0 else "%0"
 
         return {
-            "successful_logins": int(success_count),
-            "failed_logins": int(failed_count),
-            "success_rate": success_rate 
+            "brute_force": {
+                "successful_logins": int(brute_success),
+                "failed_logins": int(brute_failed),
+                "success_rate": brute_success_rate
+            },
+            "dictionary_attack": {
+                "successful_logins": int(dict_success),
+                "failed_logins": int(dict_failed),
+                "success_rate": dict_success_rate
+            }
         }
 
     except Exception as e:

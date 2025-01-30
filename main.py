@@ -19,12 +19,12 @@ from analysis import (
     analyze_malware_by_hour,
     analyze_top_malware_files,
     analyze_top_protocols,
-    analyze_attacker_login_success,
     analyze_top_brute_force_countries,
     analyze_top_command_injection_countries,
     analyze_top_dictionary_attack_countries,
     analyze_top_file_download_countries,
-    analyze_top_malware_countries
+    analyze_top_malware_countries,
+    analyze_attacker_login_success_separately
 )
 
 app = FastAPI()
@@ -156,7 +156,7 @@ def get_top_malware_countries():
 def get_top_protocols():
     return analyze_top_protocols()
 
-#Saldırganların login başarı yüzdesi
-@app.get("/analyze/login-success-rate")
-def get_login_success_rate():
-    return analyze_attacker_login_success()
+#brute-force ve dictionary-attack için login yüzdeleri
+@app.get("/analyze/attacker-login-success")
+def get_attacker_login_success():
+    return analyze_attacker_login_success_separately()
